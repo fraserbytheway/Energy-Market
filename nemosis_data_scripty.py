@@ -9,6 +9,9 @@ RAW_DATA_CACHE = Path.cwd() / 'raw_data'
 RAW_DATA_CACHE.mkdir(parents=True, exist_ok=True)
 INTS = ['int64', 'Int64']               # numpy and pandas types
 FLOATS = ['float64', 'Float64']         # numpy and pandas types
+FUEL_TYPES = ['Battery Storage', 'Hydro', 'Solar', 'Fossil', 'Wind',
+       'Renewable/ Biomass / Waste', '-',
+       'Renewable/ Biomass / Waste and Fossil', None]
 
 
 class NemRun:
@@ -25,6 +28,12 @@ class NemRun:
         self.bid_stack = pd.DataFrame()
         self.dispatch_stack = pd.DataFrame()
         self.cache = cache
+
+        if self.fuel_source not in FUEL_TYPES:
+            raise ValueError(
+                f"Invalid fuel_source '{self.fuel_source}'. "
+                f"Valid options: {FUEL_TYPES}"
+            )
 
     @staticmethod
     def file_saver(df, output_path, save_parquet, save_excel):
@@ -174,7 +183,7 @@ class NemRun:
         df['dispatch'] = np.select(conditions, choices, default='non')
 
         if self.fuel_source:
-            df = df[df['Fuel Source - Primary'].str.contains(self.fuel_source)]
+            df = df[df['Fuel Source - Primary'] == self.fuel_source]
 
         df = df.loc[:, ['DUID', 'SETTLEMENTDATE', 'REGIONID', 'dispatch', 'TOTALCLEARED', 'RRP']]
         df = source.merge(df, left_on=['DUID', 'REGIONID', 'DIRECTION', 'INTERVAL_DATETIME'],
@@ -232,8 +241,8 @@ class NemRun:
         return df
 
     # changes bid stack to have a unique price/vol band for each DUID and time interval on each row
-    def bid_stack_melt(self, df = None, save_parquet=False, save_excel=False, output_path=None, discard_empty=True):
-        if not df:
+    def bid_stack_melt(self, df = pd.DataFrame(), save_parquet=False, save_excel=False, output_path=None, discard_empty=True):
+        if df.empty:
             df = self.activated_bids()
 
         price_cols = [c for c in df.columns if c.startswith('PRICEBAND')]
