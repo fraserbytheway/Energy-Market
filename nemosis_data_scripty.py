@@ -12,7 +12,6 @@ FLOATS = ['float64', 'Float64'] # NumPy float64 + pandas Float64
 
 # Creates table with nemosis table query format
 class Table:
-
     # AEMO tables found here https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables
     # filterc is column to filter on, filterv is value to select within column
     def __init__(self, name, cols, filterc = None, filterv = None):
