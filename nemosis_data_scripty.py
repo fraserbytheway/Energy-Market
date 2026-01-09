@@ -104,7 +104,6 @@ def build_dispatch_stack(output_path, datasheet_path, start = DEFAULT_START, end
     return res
 
 if __name__ == '__main__':
-
     dlp = build_dispatch_stack("dispatch.parquet", "datasheet.xlsx",
                                 start = DEFAULT_START,
                                 end = DEFAULT_END)
